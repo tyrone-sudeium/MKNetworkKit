@@ -102,14 +102,13 @@ static NSOperationQueue *_sharedNetworkQueue;
     self.apiPath = apiPath;
 
     if(hostName) {
+      self.hostName = hostName;  
+      self.reachability = [Reachability reachabilityWithHostname:self.hostName];
+      [self.reachability startNotifier];
       [[NSNotificationCenter defaultCenter] addObserver:self 
                                                selector:@selector(reachabilityChanged:) 
                                                    name:kReachabilityChangedNotification 
-                                                 object:nil];
-      
-      self.hostName = hostName;  
-      self.reachability = [Reachability reachabilityWithHostname:self.hostName];
-      [self.reachability startNotifier];            
+                                                 object:self.reachability];
     }
     
     if([headers objectForKey:@"User-Agent"] == nil) {
@@ -173,6 +172,9 @@ static NSOperationQueue *_sharedNetworkQueue;
 
 -(void) reachabilityChanged:(NSNotification*) notification
 {
+  if (notification.object != self.reachability) {
+    return; // It was some other engine's reachability object that changed
+  }
   if([self.reachability currentReachabilityStatus] == ReachableViaWiFi)
   {
     DLog(@"Server [%@] is reachable via Wifi", self.hostName);
