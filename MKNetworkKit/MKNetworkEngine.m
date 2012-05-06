@@ -138,7 +138,9 @@ static NSOperationQueue *_sharedNetworkQueue;
 #pragma mark Memory Mangement
 
 -(void) dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
+    @synchronized(self) {
+        [[NSNotificationCenter defaultCenter] removeObserver:self];
+    }
 }
 
 +(void) dealloc {
@@ -172,31 +174,33 @@ static NSOperationQueue *_sharedNetworkQueue;
 
 -(void) reachabilityChanged:(NSNotification*) notification
 {
-  if (notification.object != self.reachability) {
-    return; // It was some other engine's reachability object that changed
-  }
-  if([self.reachability currentReachabilityStatus] == ReachableViaWiFi)
-  {
-    DLog(@"Server [%@] is reachable via Wifi", self.hostName);
-    [_sharedNetworkQueue setMaxConcurrentOperationCount:6];
-    
-    [self checkAndRestoreFrozenOperations];
-  }
-  else if([self.reachability currentReachabilityStatus] == ReachableViaWWAN)
-  {
-    DLog(@"Server [%@] is reachable only via cellular data", self.hostName);
-    [_sharedNetworkQueue setMaxConcurrentOperationCount:2];
-    [self checkAndRestoreFrozenOperations];
-  }
-  else if([self.reachability currentReachabilityStatus] == NotReachable)
-  {
-    DLog(@"Server [%@] is not reachable", self.hostName);        
-    [self freezeOperations];
-  }   
-  
-  if(self.reachabilityChangedHandler) {
-    self.reachabilityChangedHandler([self.reachability currentReachabilityStatus]);
-  }
+    @synchronized(self) {
+        if (notification.object != self.reachability) {
+            return; // It was some other engine's reachability object that changed
+        }
+        if([self.reachability currentReachabilityStatus] == ReachableViaWiFi)
+        {
+            DLog(@"Server [%@] is reachable via Wifi", self.hostName);
+            [_sharedNetworkQueue setMaxConcurrentOperationCount:6];
+            
+            [self checkAndRestoreFrozenOperations];
+        }
+        else if([self.reachability currentReachabilityStatus] == ReachableViaWWAN)
+        {
+            DLog(@"Server [%@] is reachable only via cellular data", self.hostName);
+            [_sharedNetworkQueue setMaxConcurrentOperationCount:2];
+            [self checkAndRestoreFrozenOperations];
+        }
+        else if([self.reachability currentReachabilityStatus] == NotReachable)
+        {
+            DLog(@"Server [%@] is not reachable", self.hostName);        
+            [self freezeOperations];
+        }   
+        
+        if(self.reachabilityChangedHandler) {
+            self.reachabilityChangedHandler([self.reachability currentReachabilityStatus]);
+        }
+    }
 }
 
 #pragma mark Freezing operations (Called when network connectivity fails)
