@@ -16,48 +16,47 @@
     if(value_ == nil)
         return nil;    
     
+    static dispatch_queue_t _lockQueue = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _lockQueue = dispatch_queue_create("NSDate+RFC1123_dateFromRFC1123_lockQueue", NULL);
+    });
+    
     __strong static NSDateFormatter *rfc1123 = nil;
-    if (!rfc1123) {
-        static dispatch_once_t oncePredicate;
-        dispatch_once(&oncePredicate, ^{
-            rfc1123 = [[NSDateFormatter alloc] init];
-            rfc1123.locale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US"];
-            rfc1123.timeZone = [NSTimeZone timeZoneWithAbbreviation:@"GMT"];
-            rfc1123.dateFormat = @"EEE',' dd MMM yyyy HH':'mm':'ss z";
-        });
-    }
-    NSDate *ret = [rfc1123 dateFromString:value_];
-    if(ret != nil)
-        return ret;
+    __strong static NSDateFormatter *rfc850 = nil;
+    __strong static NSDateFormatter *asctime = nil;
     
-    static NSDateFormatter *rfc850 = nil;
-    if(!rfc850)
-    {
-        static dispatch_once_t oncePredicate;
-        dispatch_once(&oncePredicate, ^{
-            rfc850 = [[NSDateFormatter alloc] init];
-            rfc850.locale = rfc1123.locale;
-            rfc850.timeZone = rfc1123.timeZone;
-            rfc850.dateFormat = @"EEEE',' dd'-'MMM'-'yy HH':'mm':'ss z";
-        });
-    }
-    ret = [rfc850 dateFromString:value_];
-    if(ret != nil)
-        return ret;
+    static dispatch_once_t oncePredicate;
+    dispatch_once(&oncePredicate, ^{
+        rfc1123 = [[NSDateFormatter alloc] init];
+        rfc1123.locale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US"];
+        rfc1123.timeZone = [NSTimeZone timeZoneWithAbbreviation:@"GMT"];
+        rfc1123.dateFormat = @"EEE',' dd MMM yyyy HH':'mm':'ss z";
+        
+        rfc850 = [[NSDateFormatter alloc] init];
+        rfc850.locale = rfc1123.locale;
+        rfc850.timeZone = rfc1123.timeZone;
+        rfc850.dateFormat = @"EEEE',' dd'-'MMM'-'yy HH':'mm':'ss z";
+        
+        asctime = [[NSDateFormatter alloc] init];
+        asctime.locale = rfc1123.locale;
+        asctime.timeZone = rfc1123.timeZone;
+        asctime.dateFormat = @"EEE MMM d HH':'mm':'ss yyyy";
+    });
     
-    static NSDateFormatter *asctime = nil;
-    if(!asctime)
-    {
-        static dispatch_once_t oncePredicate;
-        dispatch_once(&oncePredicate, ^{
-            
-            asctime = [[NSDateFormatter alloc] init];
-            asctime.locale = rfc1123.locale;
-            asctime.timeZone = rfc1123.timeZone;
-            asctime.dateFormat = @"EEE MMM d HH':'mm':'ss yyyy";
-        });
-    }
-    return [asctime dateFromString:value_];
+    __block NSDate *ret = nil;
+    dispatch_sync(_lockQueue, ^{
+        ret = [rfc1123 dateFromString:value_];
+        if(ret == nil)
+            return;
+        
+        ret = [rfc850 dateFromString:value_];
+        if(ret != nil)
+            return;
+        
+        ret = [asctime dateFromString:value_];
+    });
+    return ret;
 }
 
 -(NSString*)rfc1123String
