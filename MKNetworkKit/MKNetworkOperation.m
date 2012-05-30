@@ -1239,7 +1239,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
     if(error) DLog(@"JSON Parsing Error: %@", error);
     return returnValue;
   } else {
-    DLog("No valid JSON Serializers found");
+    DLog(@"No valid JSON Serializers found");
     return [self responseString];
   }
 }
