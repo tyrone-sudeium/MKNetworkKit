@@ -454,7 +454,7 @@
 }
 
 -(void) dealloc {
-  
+    DLog(@"DEALLOC: %@", self);
   [_connection cancel];
   _connection = nil;
 }
@@ -1169,12 +1169,20 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
     
     if(self.response.statusCode == 301) {
       DLog(@"%@ has moved to %@", self.url, [self.response.URL absoluteString]);
+        // t.trevorrow: TODO: Handle redirection.
     }
     else if(self.response.statusCode == 304) {
       DLog(@"%@ not modified", self.url);
+        // t.trevorrow: Since it's not modified, just return what you did last time.
+        // Clients should be smart enough to realise that when they get this second callback
+        // the operation will be finished...  so they can check whether it's just a pre-emptive
+        // cache response or a validated-by-the-server-as-not-modified cache response by looking 
+        // at [completedOperation isFinished] and [completedOperation isCachedResponse]
+        [self operationSucceeded];
     }
     else if(self.response.statusCode == 307) {
       DLog(@"%@ temporarily redirected", self.url);
+        // t.trevorrow: TODO: Handle redirection.
     }
     else {
       DLog(@"%@ returned status %d", self.url, (int) self.response.statusCode);
@@ -1187,7 +1195,10 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
                                                    userInfo:self.response.allHeaderFields]];
   }  
   [self endBackgroundTask];
-  
+    // t.trevorrow: You have to clear out these blocks since they most likely retain this operation.
+    // Not doing so will cause this operation to leak due to strong reference loop.
+    self.responseBlocks = nil;
+    self.errorBlocks = nil;
 }
 
 #pragma mark -
