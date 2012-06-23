@@ -456,7 +456,7 @@ static NSOperationQueue *_sharedNetworkQueue;
     }
   
   MKNetworkOperation *op = [self operationWithURLString:[url absoluteString]];
-  
+  NSData *cachedData = [self cachedDataForOperation: op];
   [op 
    onCompletion:^(MKNetworkOperation *completedOperation)
    {
@@ -468,10 +468,12 @@ static NSOperationQueue *_sharedNetworkQueue;
    onError:^(NSError* error) {
      
      DLog(@"%@", error);
-   }];    
-  
-  [self enqueueOperation:op];
-  
+   }];
+  if (cachedData != nil) {
+    [op setCachedData: cachedData];
+  } else {
+    [self enqueueOperation:op];
+  }
   return op;
 }
 
