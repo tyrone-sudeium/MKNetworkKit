@@ -47,7 +47,7 @@
     __block NSDate *ret = nil;
     dispatch_sync(_lockQueue, ^{
         ret = [rfc1123 dateFromString:value_];
-        if(ret == nil)
+        if(ret != nil)
             return;
         
         ret = [rfc850 dateFromString:value_];
