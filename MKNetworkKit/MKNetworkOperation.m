@@ -454,7 +454,7 @@
 }
 
 -(void) dealloc {
-    DLog(@"DEALLOC: %@", self);
+    MK_DLog(@"DEALLOC: %@", self);
   [_connection cancel];
   _connection = nil;
 }
@@ -1094,7 +1094,7 @@
       NSString *bytesText = [rangeString substringWithRange:NSMakeRange(6, [rangeString length] - 7)];
       self.startPosition = [bytesText integerValue];
       self.downloadedDataSize = self.startPosition;
-      DLog(@"Resuming at %d bytes", self.startPosition);
+      MK_DLog(@"Resuming at %d bytes", self.startPosition);
     }
   }
   
@@ -1141,7 +1141,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
   if (inRedirectResponse) {
     NSMutableURLRequest *r = [self.request mutableCopy];
     [r setURL: [inRequest URL]];
-    DLog(@"Redirected to %@", [[inRequest URL] absoluteString]);
+    MK_DLog(@"Redirected to %@", [[inRequest URL] absoluteString]);
     
     return r;
   } else {
@@ -1168,11 +1168,11 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
   if (self.response.statusCode >= 300 && self.response.statusCode < 400) {
     
     if(self.response.statusCode == 301) {
-      DLog(@"%@ has moved to %@", self.url, [self.response.URL absoluteString]);
+      MK_DLog(@"%@ has moved to %@", self.url, [self.response.URL absoluteString]);
         // t.trevorrow: TODO: Handle redirection.
     }
     else if(self.response.statusCode == 304) {
-      DLog(@"%@ not modified", self.url);
+      MK_DLog(@"%@ not modified", self.url);
         // t.trevorrow: Since it's not modified, just return what you did last time.
         // Clients should be smart enough to realise that when they get this second callback
         // the operation will be finished...  so they can check whether it's just a pre-emptive
@@ -1181,11 +1181,11 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
         [self operationSucceeded];
     }
     else if(self.response.statusCode == 307) {
-      DLog(@"%@ temporarily redirected", self.url);
+      MK_DLog(@"%@ temporarily redirected", self.url);
         // t.trevorrow: TODO: Handle redirection.
     }
     else {
-      DLog(@"%@ returned status %d", self.url, (int) self.response.statusCode);
+      MK_DLog(@"%@ returned status %d", self.url, (int) self.response.statusCode);
     }
     
   } else if (self.response.statusCode >= 400 && self.response.statusCode < 600 && ![self isCancelled]) {                        
@@ -1247,10 +1247,10 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
     if([self responseData] == nil) return nil;
     NSError *error = nil;
     id returnValue = [NSJSONSerialization JSONObjectWithData:[self responseData] options:0 error:&error];    
-    if(error) DLog(@"JSON Parsing Error: %@", error);
+    if(error) MK_DLog(@"JSON Parsing Error: %@", error);
     return returnValue;
   } else {
-    DLog(@"No valid JSON Serializers found");
+    MK_DLog(@"No valid JSON Serializers found");
     return [self responseString];
   }
 }
@@ -1286,12 +1286,12 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
 -(void) operationFailedWithError:(NSError*) error {
   
   self.error = error;
-  DLog(@"%@, [%@]", self, [self.error localizedDescription]);
+  MK_DLog(@"%@, [%@]", self, [self.error localizedDescription]);
   for(MKNKErrorBlock errorBlock in self.errorBlocks)
     errorBlock(error);  
   
 #if TARGET_OS_IPHONE
-  DLog(@"State: %d", [[UIApplication sharedApplication] applicationState]);
+  MK_DLog(@"State: %d", [[UIApplication sharedApplication] applicationState]);
   if([[UIApplication sharedApplication] applicationState] == UIApplicationStateBackground)
     [self showLocalNotification];
 #endif

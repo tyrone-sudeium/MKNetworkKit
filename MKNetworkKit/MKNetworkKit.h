@@ -38,24 +38,16 @@
 #import <AppKit/AppKit.h>
 #endif
 
-#ifdef DEBUG
-#ifndef DLog
-#   define DLog(fmt, ...) {NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);}
-#endif
-#ifndef ELog
-#   define ELog(err) {if(err) DLog(@"%@", err)}
-#endif
+#ifdef MKNETWORK_DEBUGGING
+#   define MK_DLog(fmt, ...) {NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);}
+#   define MK_ELog(err) {if(err) DLog(@"%@", err)}
 #else
-#ifndef DLog
-#   define DLog(...)
-#endif
-#ifndef ELog
-#   define ELog(err)
-#endif
+#   define MK_DLog(...) {}
+#   define MK_ELog(err) {}
 #endif
 
 // ALog always displays output regardless of the DEBUG setting
-#define ALog(fmt, ...) {NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);};
+#define MK_ALog(fmt, ...) {NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);};
 
 #import "Categories/NSString+MKNetworkKitAdditions.h"
 #import "Categories/NSDictionary+RequestEncoding.h"

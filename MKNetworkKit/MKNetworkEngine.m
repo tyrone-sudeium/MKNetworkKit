@@ -180,20 +180,20 @@ static NSOperationQueue *_sharedNetworkQueue;
         }
         if([self.reachability currentReachabilityStatus] == ReachableViaWiFi)
         {
-            DLog(@"Server [%@] is reachable via Wifi", self.hostName);
+            MK_DLog(@"Server [%@] is reachable via Wifi", self.hostName);
             [_sharedNetworkQueue setMaxConcurrentOperationCount:6];
             
             [self checkAndRestoreFrozenOperations];
         }
         else if([self.reachability currentReachabilityStatus] == ReachableViaWWAN)
         {
-            DLog(@"Server [%@] is reachable only via cellular data", self.hostName);
+            MK_DLog(@"Server [%@] is reachable only via cellular data", self.hostName);
             [_sharedNetworkQueue setMaxConcurrentOperationCount:2];
             [self checkAndRestoreFrozenOperations];
         }
         else if([self.reachability currentReachabilityStatus] == NotReachable)
         {
-            DLog(@"Server [%@] is not reachable", self.hostName);        
+            MK_DLog(@"Server [%@] is not reachable", self.hostName);        
             [self freezeOperations];
         }   
         
@@ -233,7 +233,7 @@ static NSOperationQueue *_sharedNetworkQueue;
   NSError *error = nil;
   NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[self cacheDirectoryName] error:&error];
   if(error)
-    DLog(@"%@", error);
+    MK_DLog(@"%@", error);
   
   NSArray *pendingOperations = [files filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
     
@@ -249,7 +249,7 @@ static NSOperationQueue *_sharedNetworkQueue;
     NSError *error = nil;
     [[NSFileManager defaultManager] removeItemAtPath:archivePath error:&error];
     if(error)
-      DLog(@"%@", error);
+      MK_DLog(@"%@", error);
   }
 }
 
@@ -298,7 +298,7 @@ static NSOperationQueue *_sharedNetworkQueue;
   
   if(self.hostName == nil) {
    
-    DLog(@"Hostname is nil, use operationWithURLString: method to create absolute URL operations");
+    MK_DLog(@"Hostname is nil, use operationWithURLString: method to create absolute URL operations");
     return nil;
   }
   
@@ -448,7 +448,7 @@ static NSOperationQueue *_sharedNetworkQueue;
 #ifdef DEBUG
   // I could enable caching here, but that hits performance and inturn affects table view scrolling
   // if imageAtURL is called for loading thumbnails.
-  if(![self isCacheEnabled]) DLog(@"imageAtURL:onCompletion: requires caching to be enabled.")
+  if(![self isCacheEnabled]) MK_DLog(@"imageAtURL:onCompletion: requires caching to be enabled.")
 #endif
     
     if (url == nil) {
@@ -467,7 +467,7 @@ static NSOperationQueue *_sharedNetworkQueue;
    }
    onError:^(NSError* error) {
      
-     DLog(@"%@", error);
+     MK_DLog(@"%@", error);
    }];
   if (cachedData != nil) {
     [op setCachedData: cachedData];
@@ -502,7 +502,7 @@ static NSOperationQueue *_sharedNetworkQueue;
       
       NSError *error = nil;
       [[NSFileManager defaultManager] removeItemAtPath:filePath error:&error]; 
-      ELog(error);
+      MK_ELog(error);
     }
     
     [[self.memoryCache objectForKey:cacheKey] writeToFile:filePath atomically:YES];        
@@ -536,7 +536,7 @@ static NSOperationQueue *_sharedNetworkQueue;
         
         NSError *error = nil;
         [[NSFileManager defaultManager] removeItemAtPath:filePath error:&error]; 
-        ELog(error);
+        MK_ELog(error);
       }
       [data writeToFile:filePath atomically:YES];
       
@@ -621,20 +621,20 @@ static NSOperationQueue *_sharedNetworkQueue;
   NSError *error = nil;
   NSArray *directoryContents = [[NSFileManager defaultManager] 
                                 contentsOfDirectoryAtPath:[self cacheDirectoryName] error:&error];
-  if(error) DLog(@"%@", error);
+  if(error) MK_DLog(@"%@", error);
   
   error = nil;
   for(NSString *fileName in directoryContents) {
     
     NSString *path = [[self cacheDirectoryName] stringByAppendingPathComponent:fileName];
     [[NSFileManager defaultManager] removeItemAtPath:path error:&error];
-    if(error) DLog(@"%@", error);
+    if(error) MK_DLog(@"%@", error);
   }    
   
   error = nil;
   NSString *cacheInvalidationPlistFilePath = [[self cacheDirectoryName] stringByAppendingPathExtension:@"plist"];
   [[NSFileManager defaultManager] removeItemAtPath:cacheInvalidationPlistFilePath error:&error];
-  if(error) DLog(@"%@", error);
+  if(error) MK_DLog(@"%@", error);
 }
 
 @end
