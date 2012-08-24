@@ -1206,12 +1206,17 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
 
 -(NSData*) responseData {
   
-  if([self isFinished])
-    return self.mutableData;
-  else if(self.cachedResponse)
+  if([self isFinished]) {
+    if (self.cachedResponse != nil && [self.cachedResponse length] > 0 && (self.mutableData == nil || [self.mutableData length] == 0)) {
+      return self.cachedResponse;
+    } else {
+      return self.mutableData;
+    }
+  } else if(self.cachedResponse) {
     return self.cachedResponse;
-  else
+  } else {
     return nil;
+  }
 }
 
 -(NSString*)responseString {
