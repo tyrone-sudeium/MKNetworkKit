@@ -55,7 +55,7 @@ typedef void (^NetworkUnreachable)(Reachability * reachability);
 @property (nonatomic, copy) NetworkUnreachable  unreachableBlock;
 
 @property (nonatomic, assign) SCNetworkReachabilityRef  reachabilityRef;
-@property (nonatomic, assign) dispatch_queue_t          reachabilitySerialQueue;
+@property (nonatomic, strong) dispatch_queue_t          reachabilitySerialQueue;
 
 @property (nonatomic, assign) BOOL reachableOnWWAN;
 
